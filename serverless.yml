@@ -5,9 +5,16 @@ plugins:
   - serverless-webpack
   - serverless-offline
 
-# serverless-webpack configuration
-# Enable auto-packing of external modules
 custom:
+  stage: ${opt:stage, self:provider.stage}
+  tableName: ${self:custom.stage}-notes
+  tableThroughputs: # There is 's' at the end
+    prod: 5
+    default: 1
+  tableThroughput: ${self:custom.tableThroughputs.${self:custom.stage}, self:custom.tableThroughputs.default}
+  # Load our webpack config
+  # serverless-webpack configuration
+  # Enable auto-packing of external modules
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules: true
@@ -17,6 +24,9 @@ provider:
   runtime: nodejs8.10
   stage: dev
   region: us-east-1
+  # env variables can be access through process.env in our functions
+  environment:
+    tableName: ${self:custom.tableName}
 
   # 'iamRoleStatement' defines the permission policy for the Lambda function.
   # In this case Lambda functions are granted with permissions to access DynamoDB.
@@ -30,7 +40,9 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+      # Restrict our IAM role permissions to the specific table for the stage
+      Resource:
+        - "Fn::GetAtt": [ NotesTable, Arn ]
 
 functions:
   # Defines an HTTP API endpoint that calls the main function in create.js
@@ -95,3 +107,7 @@ functions:
           method: delete
           cors: true
           authorizer: aws_iam
+
+resources:
+  # DynamoDB
+  - ${file(resources/dynamodb-table.yml)}
