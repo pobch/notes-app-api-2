@@ -38,8 +38,8 @@ Resources:
               StringEquals:
                 cognito-identity.amazonaws.com:aud:
                   Ref: CognitoIdentityPool
-                ForAnyValue:StringLike:
-                  cognito-identity.amazonaws.com:amr: authenticated
+              ForAnyValue:StringLike:
+                cognito-identity.amazonaws.com:amr: authenticated
       Policies:
         - PolicyName: CognitoAuthorizedPolicy
           PolicyDocument:
@@ -58,7 +58,7 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ''
-                    - - arn:aws:execute-api
+                    - - 'arn:aws:execute-api:'
                       - Ref: AWS::Region
                       - ':'
                       - Ref: AWS::AccountId
@@ -73,7 +73,7 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ''
-                    - - Fn::GetAtt: [ AttachmentsBucket, Arn]
+                    - - Fn::GetAtt: [ AttachmentsBucket, Arn ]
                       - '/private/'
                       - '$'
                       - '{cognito-identity.amazonaws.com:sub}/*'
